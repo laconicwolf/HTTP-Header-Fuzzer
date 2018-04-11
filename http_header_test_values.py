@@ -1,6 +1,7 @@
 import string
 import random
 
+
 def get_header_values(test, header):
     ''' Accepts the name of an HTTP header and returns the contents of a 
     function containing a list of header values associated with the header
@@ -11,6 +12,8 @@ def get_header_values(test, header):
     if header == 'Host':
         return get_host_header_values(test)
     if header == 'Forwarded':
+        return get_forwarded_header_values(test)
+    if header == 'X-Forwarded-For':
         return get_forwarded_header_values(test)
     if header == 'From':
         return get_host_header_values(test)
@@ -60,6 +63,9 @@ def get_host_header_values(test):
         for i in range(0, 500, 50):
             random_string = get_random_string(i)
             values.append(random_string)
+    if test == 'authorization':
+        addresses = ['127.0.0.1', 'localhost', '10.10.1.1']
+        values += [addr for addr in addresses]
     return values
 
 
@@ -74,6 +80,10 @@ def get_useragent_header_values(test):
         for i in range(50, 500, 50):
             random_string = get_random_string(i)
             values.append(random_string)
+    if test == 'authorization':
+        mobile_user_agents = ['Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
+                              'Mozilla/5.0 (Linux; Android 7.0; SM-G930V Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Mobile Safari/537.36',]
+        values += [ua for ua in mobile_user_agents] 
     return values
 
 
@@ -88,10 +98,30 @@ def get_forwarded_header_values(test):
         for i in range(50, 500, 50):
             random_string = get_random_string(i)
             values.append(random_string)
+    if test == 'authorization':
+        addresses = ['127.0.0.1', 'localhost', '10.10.1.1']
+        values += ['for=' + addr for addr in addresses]
     return values
 
 
-def get_host_header_values(test):
+def get_X_forwarded_for_header_values(test):
+    ''' Returns header values.
+    '''
+    values = []
+    if test == 'reflection':
+        random_string = get_random_string(10)
+        values.append(random_string)
+    if test == 'length':
+        for i in range(50, 500, 50):
+            random_string = get_random_string(i)
+            values.append(random_string)
+    if test == 'authorization':
+        addresses = ['127.0.0.1', 'localhost', '10.10.1.1']
+        values += [addr for addr in addresses]
+    return values
+
+
+def get_from_header_values(test):
     ''' Returns header values.
     '''
     values = []
@@ -114,7 +144,7 @@ def get_connection_header_values(test):
         values.append(random_string)
     if test == 'length':
         for i in range(50, 500, 50):
-            string_val = 'J' * i
+            string_val = 'A' * i
             values.append(string_val)
     return values
 
@@ -130,4 +160,7 @@ def get_referer_header_values(test):
         for i in range(50, 500, 50):
             random_string = get_random_string(i)
             values.append(random_string)
+    if test == 'authorization':
+        addresses = ['', '127.0.0.1', 'localhost', '10.10.1.1']
+        values += [addr for addr in addresses]
     return values

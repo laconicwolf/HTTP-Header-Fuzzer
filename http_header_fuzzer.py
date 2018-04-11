@@ -56,7 +56,7 @@ def make_request(url, header=None, header_value=None):
         s.proxies['http'] = args.proxy
         s.proxies['https'] = args.proxy
     
-    resp = s.get(url, verify=False, timeout=2)
+    resp = s.get(url, verify=False, timeout=int(args.timeout))
     return resp
 
 
@@ -69,7 +69,10 @@ def scanner_controller(url):
     global data
     for test in tests_to_run:
         for header in headers_to_fuzz:
-            header_values = get_header_values(test, header)
+            try:
+                header_values = get_header_values(test, header)
+            except Exception as e:
+                continue
             if args.verbose:
                 with print_lock:
                     print("[*] Fuzzing {} header at {}".format(header, url))
@@ -82,13 +85,15 @@ def scanner_controller(url):
                         print('[-] Unable to connect to site: {}'.format(url))
                         print('[*] {}'.format(e))
                     continue
-
                 message = ''
                 test_result = ''
                 if test == 'reflection':
-                    message, test_result = check_for_reflection(url, resp, header, header_value)
+                    message, test_result, response_length = check_for_reflection(url, resp, header, header_value)
                 if test == 'length':
-                    message, test_result = test_long_header_value(url, resp, header, header_value)
+                    message, test_result, response_length = test_long_header_value(url, resp, header, header_value)
+                if test == 'authorization':
+                    message, test_result, response_length = test_ip_address_header_value(url, resp, header, header_value)
+                
                 if message:
                     with print_lock:
                         print(message)
@@ -98,7 +103,7 @@ def scanner_controller(url):
                             test_result = '\n'.join(test_result)
                         else:
                             test_result = test_result[0]
-                request_data.extend((url, header, header_value, resp.status_code, test_result))
+                request_data.extend((url, header, header_value, resp.status_code, test_result, response_length))
                 data.append(request_data)
 
 
@@ -138,16 +143,19 @@ if __name__ == '__main__':
     parser.add_argument("-uf", "--url_file", help="Specify a file containing urls formatted http(s)://addr:port.")
     parser.add_argument("-rt", "--reflection_test", help="Test if header values appear in HTTP response", action="store_true")
     parser.add_argument("-lt", "--length_test", help="Test how the length of a header value affects the HTTP response", action="store_true")
+    parser.add_argument("-aut", "--authorization_test", help="Test how a header value handles different IP addresses affects the HTTP response", action="store_true")
     #parser.add_argument("-ct", "--commands_test", help="Test how the application handles OS commands as header values.", action="store_true")
     parser.add_argument("-hh", "--host_header", help="Fuzz the host header.", action="store_true")
     parser.add_argument("-uah", "--user_agent_header", help="Fuzz the user agent header.", action="store_true")
     parser.add_argument("-conh", "--connection_header", help="Fuzz the user Connection header.", action="store_true")
     parser.add_argument("-f", "--forwarded_header", help="Fuzz the Forwarded header", action="store_true")
+    parser.add_argument("-xffh", "--x_forwarded_for_header", help="Fuzz the X-Forwarded-For header", action="store_true")
     parser.add_argument("-fr", "--from_header", help="Fuzz the from header", action="store_true")
     parser.add_argument("-r", "--referer_header", help="Fuzz the Referer header", action="store_true")
     parser.add_argument("-pr", "--proxy", help="Specify a proxy to use (-p 127.0.0.1:8080)")
     parser.add_argument("-c", "--credentials", help="Specify credentials to submit. Must be quoted. Example: -c 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='. Example: -c 'Cookie: SESS=Aid8eUje8&3jdolapf'")
     parser.add_argument("-t", "--threads", nargs="?", type=int, default=5, help="Specify number of threads (default=5)")
+    parser.add_argument("-to", "--timeout", nargs="?", type=int, default=5, help="Specify number of seconds until a connection timeout (default=5)")
     parser.add_argument("-csv", "--csv", nargs='?', const='http_header_fuzzing_results.csv', help="Specify the name of a csv file to write to. If the file already exists it will be appended")
     args = parser.parse_args()
 
@@ -163,39 +171,46 @@ if __name__ == '__main__':
             exit()
         urls = open(urlfile).read().splitlines()
 
-    if not args.all_headers and not args.host_header and not args.user_agent_header and not args.forwarded_header and not args.from_header and not args.referer_header and not args.connection_header:
+    if not args.all_headers and not args.host_header and not args.user_agent_header\
+        and not args.forwarded_header and not args.from_header and not args.referer_header \
+        and not args.connection_header and not args.x_forwarded_for_header and not args.from_header:
         parser.print_help()
         print("\n [-]  Please specify a header or headers to test. Use -a (--all) to run all tests.\n")
         exit()
 
+    # Initialize the headers to be tested 
     headers_to_fuzz = []
-    tests_to_run = []
-
     if args.all_headers or args.host_header:
         headers_to_fuzz.append('Host')
-
     if args.all_headers or args.user_agent_header:
         headers_to_fuzz.append('User-Agent')
-
     if args.all_headers or args.forwarded_header:
         headers_to_fuzz.append('Forwarded')
-
+    if args.all_headers or args.x_forwarded_for_header:
+        headers_to_fuzz.append('X-Forwarded-For')
     if args.all_headers or args.from_header:
         headers_to_fuzz.append('From')
-
     if args.all_headers or args.referer_header:
         headers_to_fuzz.append('Referer')
-
     if args.all_headers or args.connection_header:
         headers_to_fuzz.append('Connection')
 
+    # Initialize the tests to be run
+    tests_to_run = []
     if args.all_tests or args. reflection_test:
         tests_to_run.append('reflection')
-
-    if args.all_tests or args. length_test:
+    if args.all_tests or args.length_test:
         tests_to_run.append('length')
+    if args.all_tests or args.authorization_test:
+        tests_to_run.append('authorization')
 
     csv_name = args.csv
+
+    print('[*] Loaded {} URLs'.format(len(urls)))
+    print('[*] Testing {} headers'.format(headers_to_fuzz))
+    print('[*] Running {} types of tests'.format(len(tests_to_run)))
+    print()
+    sleep(2)
 
     # To disable HTTPS related warnings
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
