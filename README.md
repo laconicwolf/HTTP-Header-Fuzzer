@@ -1,5 +1,5 @@
 # HTTP Header Fuzzer
-A multithreaded Python3 program that fuzzes HTTP headers and values and outputs the results to a CSV file.
+A multithreaded Python3 program that fuzzes HTTP headers and values and outputs the results to a CSV file. Checks HTTP responses for header reflection, HTTP response codes, attempts OS injection, uses long header values, uses special characters as header values. 
 ## Usage
 ```python3 http_header_fuzzer.py -uf <file containing urls> -at -ah -csv scan_results.csv```
 ### Example
