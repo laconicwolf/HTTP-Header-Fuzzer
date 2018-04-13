@@ -1,4 +1,7 @@
-# This file affects command injection tests
+''' This file affects command injection tests as called in http_header_test_values.py
+and used in http_header_fuzzer.py. Leaving the values as default probably won't 
+help you determine whether command injection is possible.
+'''
 
 # Enter the IP address where you have a sniffer or can review logs of
 # incoming connections
