@@ -95,6 +95,7 @@ def scanner_controller(url):
                 if args.verbose:
                     with print_lock:
                         print('\n[+] URL: {}'.format(url))
+                        print('    Test: {}'.format(test))
                         print('    Header: {}'.format(header))
                         print('    Value: {}'.format(printable_header_value))
                         if len(header_value) > 50:
@@ -151,6 +152,7 @@ if __name__ == '__main__':
     parser.add_argument("-lt", "--length_test", help="Test how the length of a header value affects the HTTP response", action="store_true")
     parser.add_argument("-aut", "--authorization_test", help="Test how a header value handles different IP addresses affects the HTTP response", action="store_true")
     parser.add_argument("-et", "--error_tests", help="Test how the application handles special characters as header values.", action="store_true")
+    parser.add_argument("-ct", "--command_injection_tests", help="Test how the application handles commands as header values.", action="store_true")
     parser.add_argument("-hh", "--host_header", help="Fuzz the host header.", action="store_true")
     parser.add_argument("-auh", "--authorization_header", help="Fuzz the authorization header.", action="store_true")
     parser.add_argument("-uah", "--user_agent_header", help="Fuzz the user agent header.", action="store_true")
@@ -160,7 +162,7 @@ if __name__ == '__main__':
     parser.add_argument("-fr", "--from_header", help="Fuzz the from header", action="store_true")
     parser.add_argument("-r", "--referer_header", help="Fuzz the Referer header", action="store_true")
     parser.add_argument("-pr", "--proxy", help="Specify a proxy to use (-p 127.0.0.1:8080)")
-    parser.add_argument("-c", "--credentials", help="Specify credentials to submit. Must be quoted. Example: -c 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='. Example: -c 'Cookie: SESS=Aid8eUje8&3jdolapf'")
+    #parser.add_argument("-c", "--credentials", help="Specify credentials to submit. Must be quoted. Example: -c 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='. Example: -c 'Cookie: SESS=Aid8eUje8&3jdolapf'")
     parser.add_argument("-t", "--threads", nargs="?", type=int, default=5, help="Specify number of threads (default=5)")
     parser.add_argument("-to", "--timeout", nargs="?", type=int, default=5, help="Specify number of seconds until a connection timeout (default=5)")
     parser.add_argument("-csv", "--csv", nargs='?', const='http_header_fuzzing_results.csv', help="Specify the name of a csv file to write to. If the file already exists it will be appended")
@@ -215,6 +217,8 @@ if __name__ == '__main__':
         tests_to_run.append('authorization')
     if args.all_tests or args.error_tests:
         tests_to_run.append('error')
+    if args.all_tests or args.command_injection_tests:
+        tests_to_run.append('command injection')
 
     csv_name = args.csv
 

