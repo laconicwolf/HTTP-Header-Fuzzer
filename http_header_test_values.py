@@ -21,6 +21,8 @@ def get_header_values(test, header):
         return get_referer_header_values(test)
     if header == 'Connection':
         return get_connection_header_values(test)
+    if header == 'Authorization':
+        return get_authorization_header_values(test)
 
 
 def get_random_useragent():
@@ -66,6 +68,9 @@ def get_host_header_values(test):
     if test == 'authorization':
         addresses = ['127.0.0.1', 'localhost', '10.10.1.1']
         values += [addr for addr in addresses]
+    if test == 'error':
+        items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
+        values += [item for item in items]
     return values
 
 
@@ -101,6 +106,9 @@ def get_forwarded_header_values(test):
     if test == 'authorization':
         addresses = ['127.0.0.1', 'localhost', '10.10.1.1']
         values += ['for=' + addr for addr in addresses]
+    if test == 'error':
+        items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
+        values += [item for item in items]
     return values
 
 
@@ -118,6 +126,9 @@ def get_X_forwarded_for_header_values(test):
     if test == 'authorization':
         addresses = ['127.0.0.1', 'localhost', '10.10.1.1']
         values += [addr for addr in addresses]
+    if test == 'error':
+        items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
+        values += [item for item in items]
     return values
 
 
@@ -163,4 +174,24 @@ def get_referer_header_values(test):
     if test == 'authorization':
         addresses = ['', '127.0.0.1', 'localhost', '10.10.1.1']
         values += [addr for addr in addresses]
+    return values
+
+
+def get_authorization_header_values(test):
+    ''' Returns header values.
+    '''
+    values = []
+    if test == 'reflection':
+        random_string = get_random_string(10)
+        values.append(random_string)
+    if test == 'length':
+        for i in range(50, 500, 50):
+            random_string = get_random_string(i)
+            values.append(random_string)
+    if test == 'authorization':
+        auths = ['Basic YWRtaW46YWRtaW4=', 'Basic Z3Vlc3Q6Z3Vlc3Q=', 'Digest AAAA', 'Bearer AAAA']
+        values += [auth for auth in auths]
+    if test == 'error':
+        items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
+        values += [item for item in items]
     return values

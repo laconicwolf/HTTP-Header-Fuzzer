@@ -9,7 +9,7 @@ def parse_to_csv(data, csv_name=None):
     if not os.path.isfile(csv_name):
         csv_file = open(csv_name, 'w', newline='')
         csv_writer = csv.writer(csv_file)
-        top_row = ['URL', 'Header', 'Value', 'Status code', 'Test Data', 'Length', 'Notes']
+        top_row = ['URL', 'Test Type', 'Header', 'Value', 'Status code', 'Length', 'Reflection', 'Notes']
         csv_writer.writerow(top_row)
         print('\n[+] The file {} does not exist. New file created!\n'.format(csv_name))
     else:

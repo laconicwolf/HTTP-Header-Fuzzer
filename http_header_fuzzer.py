@@ -68,6 +68,8 @@ def scanner_controller(url):
     '''
     global data
     for test in tests_to_run:
+        with print_lock:
+            print('\n[*] Running {} tests...'.format(test))
         for header in headers_to_fuzz:
             try:
                 header_values = get_header_values(test, header)
@@ -75,35 +77,39 @@ def scanner_controller(url):
                 continue
             if args.verbose:
                 with print_lock:
-                    print("[*] Fuzzing {} header at {}".format(header, url))
+                    print('\n[*] Fuzzing {} header at {}'.format(header, url))
             for header_value in header_values:
                 request_data = []
                 try:
                     resp = make_request(url, header, header_value)
                 except Exception as e:
                     if args.verbose:
-                        print('[-] Unable to connect to site: {}'.format(url))
-                        print('[*] {}'.format(e))
+                        with print_lock:
+                            print('[-] Unable to connect to site: {}'.format(url))
+                            print('[*] {}'.format(e))
                     continue
-                message = ''
-                test_result = ''
-                if test == 'reflection':
-                    message, test_result, response_length = check_for_reflection(url, resp, header, header_value)
-                if test == 'length':
-                    message, test_result, response_length = test_long_header_value(url, resp, header, header_value)
-                if test == 'authorization':
-                    message, test_result, response_length = test_ip_address_header_value(url, resp, header, header_value)
-                
-                if message:
+
+                status_code, length, reflection = test_headers(url, test, resp, header, header_value)
+                does_reflect = 'True' if reflection else 'False'
+                printable_header_value = header_value if len(header_value) < 80 else header_value[:80] + '...' 
+                if args.verbose:
                     with print_lock:
-                        print(message)
-                if test_result:
-                    if type(test_result) == list:
-                        if len(test_result) > 1:
-                            test_result = '\n'.join(test_result)
+                        print('\n[+] URL: {}'.format(url))
+                        print('    Header: {}'.format(header))
+                        print('    Value: {}'.format(printable_header_value))
+                        if len(header_value) > 50:
+                            print('    Value length: {} characters'.format(len(header_value)))
+                        print('    Status Code: {}'.format(status_code))
+                        print('    Response Length: {}'.format(length))
+                        print('    Header reflected in response?: {}'.format(does_reflect))
+                
+                if reflection:
+                    if type(reflection) == list:
+                        if len(reflection) > 1:
+                            reflection = '\n'.join(reflection)
                         else:
-                            test_result = test_result[0]
-                request_data.extend((url, header, header_value, resp.status_code, test_result, response_length))
+                            reflection = reflection[0]
+                request_data.extend((url, test, header, header_value, status_code, length, does_reflect))
                 data.append(request_data)
 
 
@@ -144,8 +150,9 @@ if __name__ == '__main__':
     parser.add_argument("-rt", "--reflection_test", help="Test if header values appear in HTTP response", action="store_true")
     parser.add_argument("-lt", "--length_test", help="Test how the length of a header value affects the HTTP response", action="store_true")
     parser.add_argument("-aut", "--authorization_test", help="Test how a header value handles different IP addresses affects the HTTP response", action="store_true")
-    #parser.add_argument("-ct", "--commands_test", help="Test how the application handles OS commands as header values.", action="store_true")
+    parser.add_argument("-et", "--error_tests", help="Test how the application handles special characters as header values.", action="store_true")
     parser.add_argument("-hh", "--host_header", help="Fuzz the host header.", action="store_true")
+    parser.add_argument("-auh", "--authorization_header", help="Fuzz the authorization header.", action="store_true")
     parser.add_argument("-uah", "--user_agent_header", help="Fuzz the user agent header.", action="store_true")
     parser.add_argument("-conh", "--connection_header", help="Fuzz the user Connection header.", action="store_true")
     parser.add_argument("-f", "--forwarded_header", help="Fuzz the Forwarded header", action="store_true")
@@ -173,9 +180,10 @@ if __name__ == '__main__':
 
     if not args.all_headers and not args.host_header and not args.user_agent_header\
         and not args.forwarded_header and not args.from_header and not args.referer_header \
-        and not args.connection_header and not args.x_forwarded_for_header and not args.from_header:
+        and not args.connection_header and not args.x_forwarded_for_header and not args.from_header \
+        and not args.authorization_header:
         parser.print_help()
-        print("\n [-]  Please specify a header or headers to test. Use -a (--all) to run all tests.\n")
+        print("\n [-]  Please specify header(s) and test(s). Use -ah to test all headers and at to run all tests.\n")
         exit()
 
     # Initialize the headers to be tested 
@@ -194,6 +202,8 @@ if __name__ == '__main__':
         headers_to_fuzz.append('Referer')
     if args.all_headers or args.connection_header:
         headers_to_fuzz.append('Connection')
+    if args.all_headers or args.authorization_header:
+        headers_to_fuzz.append('Authorization')
 
     # Initialize the tests to be run
     tests_to_run = []
@@ -203,14 +213,16 @@ if __name__ == '__main__':
         tests_to_run.append('length')
     if args.all_tests or args.authorization_test:
         tests_to_run.append('authorization')
+    if args.all_tests or args.error_tests:
+        tests_to_run.append('error')
 
     csv_name = args.csv
 
-    print('[*] Loaded {} URLs'.format(len(urls)))
-    print('[*] Testing {} headers'.format(headers_to_fuzz))
-    print('[*] Running {} types of tests'.format(len(tests_to_run)))
     print()
-    sleep(2)
+    print('[*] Loaded {} URLs'.format(len(urls)))
+    print('[*] Testing {} headers'.format(len(headers_to_fuzz)))
+    print('[*] Running {} types of tests'.format(len(tests_to_run)))
+    sleep(4)
 
     # To disable HTTPS related warnings
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
