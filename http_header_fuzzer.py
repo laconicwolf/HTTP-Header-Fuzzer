@@ -48,9 +48,18 @@ def make_request(url, header=None, header_value=None):
     s.headers[header] = header_value
     
     if args.credentials:
-        cred_type = credentials.split(':')[0]
-        cred_value = credentials.split(':')[1].lstrip()
-        s.headers[cred_type] = cred_value
+        if 'authorization' in args.credentials.lower() and header != 'Authorization': 
+            cred_type = credentials.split(':')[0]
+            cred_value = credentials.split(':')[1].lstrip()
+            s.headers[cred_type] = cred_value
+        elif args.credentials.lower().startswith('cookie:'):
+            creds = args.credentials[7:].lstrip()
+            cookies = creds.split(';')
+            for cookie in cookies:
+                cookie_name = cookie.split('=')[0]
+                cookie_value = '='.join(cookie.split('=')[1:]).lstrip()
+                s.cookies[cookie_name] = cookie_value
+
 
     if args.proxy:
         s.proxies['http'] = args.proxy
@@ -102,15 +111,19 @@ def scanner_controller(url):
                             print('    Value length: {} characters'.format(len(header_value)))
                         print('    Status Code: {}'.format(status_code))
                         print('    Response Length: {}'.format(length))
-                        print('    Header reflected in response?: {}'.format(does_reflect))
+                        print('    Reflected in response: {}'.format(does_reflect))
                 
                 if reflection:
                     if type(reflection) == list:
-                        if len(reflection) > 1:
+                        if len(reflection) < 10:
                             reflection = '\n'.join(reflection)
+                        elif len(reflection) < 10:
+                            reflection = "The value of the header reflected {} times. Probable false positive."
                         else:
-                            reflection = reflection[0]
-                request_data.extend((url, test, header, header_value, status_code, length, does_reflect))
+                            reflection = reflection[0] 
+                else:
+                    reflection = ''
+                request_data.extend((url, test, header, header_value, status_code, length, does_reflect, reflection))
                 data.append(request_data)
 
 

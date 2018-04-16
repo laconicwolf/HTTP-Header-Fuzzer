@@ -1,9 +1,3 @@
-''' This file contains functions that determine how the HTTP
-responses are tested based on the test type and header value.
-Results are returned to http_header_fuzzer.py.
-'''
-
-
 def get_response_length(response):
     return str(len(response.text))
 

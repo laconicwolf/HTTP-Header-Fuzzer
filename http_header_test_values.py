@@ -1,8 +1,3 @@
-''' This file contains functions that determine and return header
-values used by http_header_fuzzer.py.
-'''
-
-
 import string
 import random
 from config import *
