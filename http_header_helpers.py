@@ -1,3 +1,8 @@
+''' This file contains formatting or output functions used 
+by http_header_fuzzer.py.
+'''
+
+
 import csv
 import os
 
