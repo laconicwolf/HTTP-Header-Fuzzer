@@ -101,6 +101,7 @@ def scanner_controller(url):
                 status_code, length, reflection = test_headers(url, test, resp, header, header_value)
                 does_reflect = 'True' if reflection else 'False'
                 printable_header_value = header_value if len(header_value) < 80 else header_value[:80] + '...' 
+                response_time = str(resp.elapsed.total_seconds())
                 if args.verbose:
                     with print_lock:
                         print('\n[+] URL: {}'.format(url))
@@ -111,6 +112,7 @@ def scanner_controller(url):
                             print('    Value length: {} characters'.format(len(header_value)))
                         print('    Status Code: {}'.format(status_code))
                         print('    Response Length: {}'.format(length))
+                        print('    Response Time: {}'.format(response_time))
                         print('    Reflected in response: {}'.format(does_reflect))
                 
                 if reflection:
@@ -123,7 +125,7 @@ def scanner_controller(url):
                             reflection = reflection[0] 
                 else:
                     reflection = ''
-                request_data.extend((url, test, header, header_value, status_code, length, does_reflect, reflection))
+                request_data.extend((url, test, header, header_value, status_code, length, response_time, does_reflect, reflection))
                 data.append(request_data)
 
 
@@ -177,7 +179,7 @@ if __name__ == '__main__':
     parser.add_argument("-pr", "--proxy", help="Specify a proxy to use (-p 127.0.0.1:8080)")
     parser.add_argument("-c", "--credentials", help="Specify credentials to submit. Must be quoted. Example: -c 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='. Example: -c 'Cookie: SESS=Aid8eUje8&3jdolapf'")
     parser.add_argument("-t", "--threads", nargs="?", type=int, default=5, help="Specify number of threads (default=5)")
-    parser.add_argument("-to", "--timeout", nargs="?", type=int, default=5, help="Specify number of seconds until a connection timeout (default=5)")
+    parser.add_argument("-to", "--timeout", nargs="?", type=int, default=10, help="Specify number of seconds until a connection timeout (default=5)")
     parser.add_argument("-csv", "--csv", nargs='?', const='http_header_fuzzing_results.csv', help="Specify the name of a csv file to write to. If the file already exists it will be appended")
     args = parser.parse_args()
 
