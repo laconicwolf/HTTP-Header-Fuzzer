@@ -22,6 +22,7 @@ python3 http_header_fuzzer.py -v -uf urls.txt -at -ah -csv header_fuzzing.csv
     Value: wbzopktwwa
     Status Code: 200
     Response Length: 111
+    Response Time: 0.8
     Header reflected in response?: False
 
 [*] Fuzzing Host header at http://laconicwolf.net/
@@ -32,5 +33,6 @@ python3 http_header_fuzzer.py -v -uf urls.txt -at -ah -csv header_fuzzing.csv
     Value: owenirpeek
     Status Code: 404
     Response Length: 357
+    Response Time: 1.1
     Header reflected in response?: True
 ```
