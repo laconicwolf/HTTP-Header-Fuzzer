@@ -7,6 +7,7 @@ A multithreaded Python3 program that fuzzes HTTP headers and values and outputs 
 
 The above command will visit each URL specified in urls.txt, and will run all tests (-at) against all headers (ah) defined in the script. The results of the script will be written to a CSV file, scan_results.csv. The verbose flag (-v) displays the results to the terminal as the requests occur. You can optionally include a threads (-t) argument (default is 5 threads) to make the scan go faster or slower. If the sites you are scanning are slow to respond, you can change the timeout options (default 5 seconds) using the -to flag (example: -to 10).
 ### Output
+I highly recommend using the ```-csv``` option to record the output. If you want to read the terminal output, you may want to slow down the scan, setting the threads (```-t```) option to a lower value (default is 5). Another option is to send the requests/responses through a proxy using the proxy option (```-pr 127.0.0.1:8080```), and let the proxy record everything. Regardless, this is what the terminal output will look like:
 ```
 python3 http_header_fuzzer.py -v -uf urls.txt -at -ah -csv header_fuzzing.csv
 
