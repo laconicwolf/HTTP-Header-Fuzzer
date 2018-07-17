@@ -177,7 +177,7 @@ if __name__ == '__main__':
     parser.add_argument("-fr", "--from_header", help="Fuzz the from header", action="store_true")
     parser.add_argument("-r", "--referer_header", help="Fuzz the Referer header", action="store_true")
     parser.add_argument("-pr", "--proxy", help="Specify a proxy to use (-p 127.0.0.1:8080)")
-    parser.add_argument("-c", "--credentials", help="Specify credentials to submit. Must be quoted. Example: -c 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='. Example: -c 'Cookie: SESS=Aid8eUje8&3jdolapf'")
+    parser.add_argument("-c", "--credentials", help='Specify credentials to submit. Must be quoted. Example: -c "Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==". Example: -c "Cookie: SESS=Aid8eUje8&3jdolapf"')
     parser.add_argument("-t", "--threads", nargs="?", type=int, default=5, help="Specify number of threads (default=5)")
     parser.add_argument("-to", "--timeout", nargs="?", type=int, default=10, help="Specify number of seconds until a connection timeout (default=5)")
     parser.add_argument("-csv", "--csv", nargs='?', const='http_header_fuzzing_results.csv', help="Specify the name of a csv file to write to. If the file already exists it will be appended")
