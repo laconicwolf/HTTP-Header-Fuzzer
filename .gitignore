@@ -1,0 +1,3 @@
+# Don't commit PyCharm filees
+.DS_Store
+.idea
