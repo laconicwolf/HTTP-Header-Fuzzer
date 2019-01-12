@@ -1,14 +1,10 @@
-''' This file contains formatting or output functions used 
-by http_header_fuzzer.py.
-'''
-
+""" This file contains formatting or output functions used by http_header_fuzzer.py """
 import csv
 import os
 
 
 def parse_to_csv(data, csv_name=None):
-    ''' Takes a list of lists and outputs to a csv file.
-    '''
+    """ Takes a list of lists and outputs to a csv file """
     csv_name = 'results.csv' if not csv_name else csv_name
     if not os.path.isfile(csv_name):
         csv_file = open(csv_name, 'w', newline='')
@@ -32,9 +28,8 @@ def parse_to_csv(data, csv_name=None):
 
 
 def normalize_urls(urls):
-    ''' Accepts a list of urls and formats them so they will be accepted.
-    Returns a new list of the processed urls.
-    '''
+    """ Accepts a list of urls and formats them so they will be accepted.
+    Returns a new list of the processed urls """
     url_list = []
     http_port_list = ['80', '280', '81', '591', '593', '2080', '2480', '3080', 
                   '4080', '4567', '5080', '5104', '5800', '6080',
@@ -68,4 +63,5 @@ def normalize_urls(urls):
         url = url.strip()
         url = url.strip('/') + '/'
         url_list.append(url)
+
     return url_list

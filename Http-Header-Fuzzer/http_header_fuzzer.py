@@ -14,14 +14,12 @@ except ImportError as error:
     print('\nMissing module: {}'.format(missing_module))
     print('Try running "pip install {}", or do an Internet search for installation instructions.'.format(missing_module.strip("'")))
     exit()
-import re
 import argparse
-import os
 import threading
 from time import sleep
-from http_header_test_values import *
-from http_header_tests import *
-from http_header_helpers import *
+from .http_header_test_values import *
+from .http_header_tests import *
+from .http_header_helpers import *
 
 if not version.startswith('3'):
     print('\nThis script has only been tested with Python3. If using another version and encounter an error, try using Python3\n')
@@ -30,16 +28,12 @@ if not version.startswith('3'):
 
 __author__ = 'Jake Miller (@LaconicWolf)'
 __date__ = '20180408'
-__version__ = '0.01'
-__description__ = '''Multithreaded website scanner that fuzzes HTTP
-                  headers.
-                  '''
+__version__ = '0.02'
+__description__ = 'Multi-threaded website scanner that fuzzes HTTP headers.'
 
 
 def make_request(url, header=None, header_value=None):
-    ''' Builds a requests object, makes a request, and returns 
-    a response object.
-    '''
+    """ Builds a requests object, makes a request, and returns a response object """
     s = requests.Session()
     
     if not header == "User-Agent":
@@ -60,7 +54,6 @@ def make_request(url, header=None, header_value=None):
                 cookie_value = '='.join(cookie.split('=')[1:]).lstrip()
                 s.cookies[cookie_name] = cookie_value
 
-
     if args.proxy:
         s.proxies['http'] = args.proxy
         s.proxies['https'] = args.proxy
@@ -70,11 +63,9 @@ def make_request(url, header=None, header_value=None):
 
 
 def scanner_controller(url):
-    ''' Controls most of the logic for the script. Accepts a URL and calls 
-    various functions to make requests and prints output to the terminal.
-    Returns nothing, but adds data to the data variable, which can be used 
-    to print to a file. 
-    '''
+    """ Controls most of the logic for the script. Accepts a URL and calls various functions to make requests
+    and prints output to the terminal. Returns nothing, but adds data to the data variable,
+    which can be used to print to a file """
     global data
     for test in tests_to_run:
         with print_lock:
@@ -130,8 +121,7 @@ def scanner_controller(url):
 
 
 def process_queue():
-    ''' processes the url queue and calls the scanner controller function
-    '''
+    """ Processes the URL queue and calls the scanner controller function """
     while True:
         current_url = url_queue.get()
         scanner_controller(current_url)
@@ -139,8 +129,7 @@ def process_queue():
 
 
 def main():
-    ''' Normalizes the URLs and starts multithreading
-    '''
+    """ Normalizes the URLs and starts multi-threading """
     processed_urls = normalize_urls(urls)
     
     for i in range(args.threads):

