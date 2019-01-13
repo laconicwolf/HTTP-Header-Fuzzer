@@ -10,7 +10,7 @@ setup(
 
     packages=find_packages(),
 
-    install_requires=['requests', 'urllib3'],
+    install_requires=['requests', 'urllib3', 'colorama'],
 
     project_urls={
         'Bug Reports': 'https://github.com/laconicwolf/HTTP-Header-Fuzzer/issues',

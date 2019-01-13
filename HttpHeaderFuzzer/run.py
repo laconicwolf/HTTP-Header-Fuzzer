@@ -1,5 +1,6 @@
 import argparse
 from sys import version
+from colorama import init
 from HttpHeaderFuzzer.header_fuzzer import *
 
 
@@ -64,11 +65,11 @@ def get_urls():
      Otherwise, load the url file and return the content. This function also validates urls passed via the -u flag """
     def terminate_if_no_urls(urls_list):
         if len(urls_list) == 0:
-            print('\n [-]  You did not pass any urls; can not continue. Terminating script.')
+            print(Fore.RED + '[-]  You did not pass any urls; can not continue. Terminating script.')
             exit()
 
     def get_urls_from_input():
-        input_urls = input("Enter the urls to test: ").replace(' ', '').split(',')
+        input_urls = input(Fore.LIGHTGREEN_EX + 'Enter the urls to test: ').replace(' ', '').split(',')
         terminate_if_no_urls(input_urls)
         return input_urls
 
@@ -78,14 +79,15 @@ def get_urls():
         return passed_urls
 
     if not args.url_file:
-        print('\n [-]  No urlfile was specified via -uf.\n')
+        print(Fore.RED + '[-]  No urlfile was specified via -uf.')
         return get_urls_from_input()
 
     url_file = args.url_file
     if os.path.exists(url_file):
         return open(url_file).read().splitlines()
     else:
-        print('\n [-]  The url file either cannot be found, or you do not have permission to open the file.\n')
+        print(Fore.RED + '[-]  The url file either cannot be found, '
+                         'or you do not have permission to open the file.')
         return get_urls_from_input()
 
 
@@ -93,19 +95,21 @@ def main():
     """ Normalizes the URLs and starts multi-threading """
     fuzzer = HeaderFuzzer(args)
     if not version.startswith('3'):
-        print('\nThis script has only been tested with Python 3. '
-              'If an error is encountered, please try with Python 3.\n')
+        print(Fore.YELLOW + 'This script has only been tested with Python 3. '
+              'If an error is encountered, please try with Python 3.')
         sleep(3)
 
     fuzzer.start(urls)
 
 
 if __name__ == '__main__':
+    init()
+    print(Fore.LIGHTCYAN_EX + 'HTTP Header Fuzzer - https://github.com/laconicwolf/HTTP-Header-Fuzzer')
     arg_parser = argparse.ArgumentParser()
     args = parse_arguments(arg_parser)
     urls = get_urls()
     if not header_args_valid(args):
-        print('\n [-]  No headers were specified. Please specify header(s) and test(s). '
-              'Use -ah to test all headers and -at to run all tests. Script will now terminate.\n')
+        print(Fore.RED + '[-]  No headers were specified. Please specify header(s) and test(s). '
+              'Use -ah to test all headers and -at to run all tests. Script will now terminate.')
         exit()
     main()

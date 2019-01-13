@@ -3,6 +3,7 @@ import threading
 import requests
 import csv
 import os
+from colorama import Fore
 from queue import Queue
 from time import sleep
 from HttpHeaderFuzzer.utils import *
@@ -26,9 +27,11 @@ class HeaderFuzzer:
 
     def start(self, urls):
         self._processed_urls = normalize_urls(urls)
-        print('\n[*] Testing {} URLs'.format(len(urls)))
-        print('[*] Testing {} headers'.format(len(self._headers_to_fuzz)))
-        print('[*] Running {} types of tests'.format(len(self._tests_to_run)))
+        print(Fore.YELLOW + '---------------------------------------------------------------')
+        print(Fore.GREEN + '[*] Testing {} URLs'.format(len(urls)))
+        print(Fore.GREEN + '[*] Testing {} headers'.format(len(self._headers_to_fuzz)))
+        print(Fore.GREEN + '[*] Running {} types of tests'.format(len(self._tests_to_run)))
+        print(Fore.YELLOW + '---------------------------------------------------------------')
         sleep(4)
 
         for i in range(self._args.threads):
@@ -54,16 +57,16 @@ class HeaderFuzzer:
             top_row = ['URL', 'Test Type', 'Header', 'Value', 'Status code', 'Length', 'Response Time', 'Reflection',
                        'Reflection context', 'Notes']
             csv_writer.writerow(top_row)
-            print('\n[+] The file {} does not exist. New file created!\n'.format(csv_name))
+            print(Fore.CYAN + '\n[+] The csv file {} does not exist. New file created!\n'.format(csv_name))
         else:
             try:
                 csv_file = open(csv_name, 'a', newline='')
             except PermissionError:
-                print('\n[-] Permission denied to open the file {}. Check if the file is open and try again.\n'.format(
-                    csv_name))
+                print(Fore.RED + '\n[-] Permission denied while opening csv file {}. '
+                                 'Results not saved.'.format(csv_name))
                 exit()
             csv_writer = csv.writer(csv_file)
-            print('\n[+]  {} exists. Appending to file!\n'.format(csv_name))
+            print(Fore.CYAN + '\n[+]  {} exists. Appending to file!\n'.format(csv_name))
 
         for line in self._data:
             csv_writer.writerow(line)
@@ -104,7 +107,7 @@ class HeaderFuzzer:
         which can be used to print to a file """
         for test in self._tests_to_run:
             with self._print_lock:
-                print('\n[*] Running {} tests...'.format(test))
+                print(Fore.LIGHTGREEN_EX + '[*] Running {} tests...'.format(test))
             for header in self._headers_to_fuzz:
                 try:
                     header_values = get_header_values(test, header)
@@ -112,7 +115,7 @@ class HeaderFuzzer:
                     continue
                 if self._args.verbose:
                     with self._print_lock:
-                        print('\n[*] Fuzzing {} header at {}'.format(header, url))
+                        print(Fore.LIGHTGREEN_EX + '[*] Fuzzing {} header at {}'.format(header, url))
                 for header_value in header_values:
                     request_data = []
                     try:
@@ -120,8 +123,8 @@ class HeaderFuzzer:
                     except Exception as e:
                         if self._args.verbose:
                             with self._print_lock:
-                                print('[-] Unable to connect to site: {}'.format(url))
-                                print('[*] {}'.format(e))
+                                print(Fore.RED + '[-] Unable to connect to site: {}'.format(url))
+                                print(Fore.RED + '[*] {}'.format(e))
                         continue
 
                     status_code, length, reflection = self.test_headers(resp, header_value)
@@ -130,7 +133,9 @@ class HeaderFuzzer:
                     response_time = str(resp.elapsed.total_seconds())
                     if self._args.verbose:
                         with self._print_lock:
-                            print('\n[+] URL: {}'.format(url))
+                            reflection_color = Fore.LIGHTCYAN_EX if does_reflect == 'True' else Fore.MAGENTA
+                            print(Fore.LIGHTMAGENTA_EX + '-')
+                            print(Fore.LIGHTBLUE_EX + '[+] URL: {}'.format(url))
                             print('    Test: {}'.format(test))
                             print('    Header: {}'.format(header))
                             print('    Value: {}'.format(printable_header_value))
@@ -139,7 +144,7 @@ class HeaderFuzzer:
                             print('    Status Code: {}'.format(status_code))
                             print('    Response Length: {}'.format(length))
                             print('    Response Time: {}'.format(response_time))
-                            print('    Reflected in response: {}'.format(does_reflect))
+                            print(reflection_color + '    Reflected in response: {}'.format(does_reflect))
 
                     if reflection:
                         if type(reflection) == list:
