@@ -6,7 +6,7 @@ import os
 from colorama import Fore
 from queue import Queue
 from time import sleep
-from HttpHeaderFuzzer.utils import *
+from Auxiliary.utils import *
 
 
 class HeaderFuzzer:

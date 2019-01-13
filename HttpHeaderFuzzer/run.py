@@ -1,7 +1,7 @@
 import argparse
 from sys import version
 from colorama import init
-from HttpHeaderFuzzer.header_fuzzer import *
+from Auxiliary.header_fuzzer import *
 
 
 def parse_arguments(parser):

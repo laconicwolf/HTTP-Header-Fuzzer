@@ -1,7 +1,7 @@
 """ This (very bloated) file contains utils that I felt didn't fit well inside header_fuzzer.py """
 import string
 import random
-from HttpHeaderFuzzer.config import *
+from Auxiliary.config import *
 
 
 def normalize_urls(urls):
