@@ -1,7 +1,7 @@
-"""This file affects command injection tests as called in http_header_test_values.py
-and used in http_header_fuzzer.py. Leaving the values as default probably won't 
-help you determine whether command injection is possible."""
-
+""" This file affects command injection tests as called in header_test_values.py
+and used in header_fuzzer.py. Leaving the values as default probably won't
+help you determine whether command injection is possible. This file also contains the parser
+instance """
 
 # Enter the IP address where you have a sniffer or can review logs of
 # incoming connections
