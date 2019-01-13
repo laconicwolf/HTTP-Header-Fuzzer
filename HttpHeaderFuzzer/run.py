@@ -39,15 +39,59 @@ def parse_arguments(parser):
                         help="Specify number of seconds until a connection timeout (default=5)")
     parser.add_argument("-csv", "--csv", nargs='?', const='http_header_fuzzing_results.csv',
                         help="Specify the name of a csv file to write to. "
-                             "If the file already exists it will be appended")
+                             "If the file already exists it will be appended"),
+    parser.add_argument("-u", "--urls", default=None, help="Specify the urls to fuzz. If the url file argument is also"
+                                                            "being passed, then it will be ignored.")
 
     return parser.parse_args()
+
+
+def header_args_valid(arguments):
+    """ If the all headers flag is not specified, then check and see if any of the acceptable headers are passed """
+    if not arguments.all_headers:
+        valid_headers = ['host_header', 'user_agent_header', 'forwarded_header', 'from_header', 'referer_header'
+                         'connection_header', 'x_forwarded_for_header', 'from_header', 'authorization_header']
+        for header in valid_headers:
+            if hasattr(arguments, header):
+                return True
+            if header == valid_headers[-1]:
+                return False
+    return True
+
+
+def get_urls():
+    """ If a problem occurs in regards to the url file, then allow the user to manually specify urls to attack.
+     Otherwise, load the url file and return the content. This function also validates urls passed via the -u flag """
+    def terminate_if_no_urls(urls_list):
+        if len(urls_list) == 0:
+            print('\n [-]  You did not pass any urls; can not continue. Terminating script.')
+            exit()
+
+    def get_urls_from_input():
+        input_urls = input("Enter the urls to test: ").replace(' ', '').split(',')
+        terminate_if_no_urls(input_urls)
+        return input_urls
+
+    if args.urls:  # If a url file is passed AND the urls flag is passed, then the url file will be ignored.
+        passed_urls = args.urls.replace(' ', '').split(',')
+        terminate_if_no_urls(passed_urls)
+        return passed_urls
+
+    if not args.url_file:
+        print('\n [-]  No urlfile was specified via -uf.\n')
+        return get_urls_from_input()
+
+    url_file = args.url_file
+    if os.path.exists(url_file):
+        return open(url_file).read().splitlines()
+    else:
+        print('\n [-]  The url file either cannot be found, or you do not have permission to open the file.\n')
+        return get_urls_from_input()
 
 
 def main():
     """ Normalizes the URLs and starts multi-threading """
     fuzzer = HeaderFuzzer(args)
-
     if not version.startswith('3'):
         print('\nThis script has only been tested with Python 3. '
               'If an error is encountered, please try with Python 3.\n')
@@ -59,31 +103,9 @@ def main():
 if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser()
     args = parse_arguments(arg_parser)
-    urls = None
-
-    if not args.url_file:  # TODO: URLs to be directly specified if no url file is passed
-        arg_parser.print_help()
-        print('\n [-]  Please specify an input file containing URLs. Use -uf <urlfile> to specify the file\n')
+    urls = get_urls()
+    if not header_args_valid(args):
+        print('\n [-]  No headers were specified. Please specify header(s) and test(s). '
+              'Use -ah to test all headers and -at to run all tests. Script will now terminate.\n')
         exit()
-
-    if args.url_file:
-        url_file = args.url_file
-        print(args.url_file)
-        if not os.path.exists(url_file):
-            print('\n [-]  The file cannot be found or you do not have permission to open the file.'
-                  'Please check the path and try again\n')
-            exit()
-        urls = open(url_file).read().splitlines()
-
-    if not args.all_headers:
-        valid_headers = ['host_header', 'user_agent_header', 'forwarded_header', 'from_header', 'referer_header'
-                         'connection_header', 'x_forwarded_for_header', 'from_header', 'authorization_header']
-        for header in valid_headers:
-            if hasattr(args, header):
-                break
-            if header == valid_headers[-1]:
-                print('\n [-]  Please specify header(s) and test(s). '
-                      'Use -ah to test all headers and -at to run all tests.\n')
-                exit()
-
     main()
