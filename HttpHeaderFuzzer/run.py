@@ -1,7 +1,7 @@
 import argparse
 from sys import version
 from colorama import init
-from Auxiliary.header_fuzzer import *
+from auxiliary.header_fuzzer import *
 
 
 def parse_arguments(parser):
