@@ -134,7 +134,6 @@ class HeaderFuzzer:
                     if self._args.verbose:
                         with self._print_lock:
                             reflection_color = Fore.LIGHTCYAN_EX if does_reflect == 'True' else Fore.MAGENTA
-                            print(Fore.LIGHTMAGENTA_EX + '-')
                             print(Fore.LIGHTBLUE_EX + '[+] URL: {}'.format(url))
                             print('    Test: {}'.format(test))
                             print('    Header: {}'.format(header))
